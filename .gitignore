@@ -1,0 +1,4 @@
+*.o
+test_suite
+*.a
+httpd

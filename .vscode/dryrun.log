@@ -1,0 +1,25 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/wyq/Documents/WorkSpace/595gle'
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c httpd.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c ThreadPool.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c ServerSocket.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c HttpServer.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c HttpConnection.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c FileReader.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c CrawlFileTree.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c WordIndex.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c HttpUtils.cc
+ar rcs projectlib.a ThreadPool.o ServerSocket.o HttpServer.o HttpConnection.o FileReader.o CrawlFileTree.o WordIndex.o HttpUtils.o
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -o httpd httpd.o projectlib.a -L. -lpthread
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_filereader.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_wordindex.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_crawlfiletree.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_serversocket.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_httpconnection.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_httputils.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_threadpool.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -c test_suite.cc
+g++ -g -Wall -Wpedantic -std=c++17 -I. -I/opt/homebrew/include -O0 -o test_suite test_filereader.o test_wordindex.o test_crawlfiletree.o test_serversocket.o test_httpconnection.o test_httputils.o test_threadpool.o test_suite.o \
+	-L../gtest -lgtest -L. -lpthread projectlib.a -lpthread
+make: Leaving directory `/Users/wyq/Documents/WorkSpace/595gle'
+ 

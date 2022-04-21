@@ -7,26 +7,17 @@
 # interested in reusing these course materials should contact the
 # author.
 
-
-# execute the following commands to install boost and googletest
-# brew install googletest
-# brew install boost
-
 # define the commands we will use for compilation and library building
 AR = ar
 ARFLAGS = rcs
 CC = gcc
 CXX = g++
 
-# define header paths and libraries
-INCLUDES = -I/opt/homebrew/include
-LIBINCLUDES = -L/opt/homebrew/lib
-
 # define useful flags to cc/ld/etc.
-CFLAGS = -g -Wall -Wpedantic -std=c11 -I. -O0 $(INCLUDES) #$(LIBINCLUDES)
-CXXFLAGS = -g -Wall -Wpedantic -std=c++17 -I. -O0 $(INCLUDES) #$(LIBINCLUDES)
+CFLAGS = -g -Wall -Wpedantic -std=c11 -I. -O0
+CXXFLAGS = -g -Wall -Wpedantic -std=c++17 -I. -O0
 LDFLAGS = -L. -lpthread
-CPPUNITFLAGS =  -lgtest $(LIBINCLUDES)  #-L../gtest
+CPPUNITFLAGS = -L../gtest -lgtest
 
 # define common dependencies
 OBJS_COMMON = ThreadPool.o ServerSocket.o HttpServer.o HttpConnection.o FileReader.o CrawlFileTree.o WordIndex.o

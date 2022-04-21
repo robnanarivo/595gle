@@ -8,8 +8,14 @@
  * interested in reusing these course materials should contact the
  * author.
  */
+#define DEV_H_
 
+#ifndef DEV_H_
+#include <string.hpp>
+#else
 #include <boost/algorithm/string.hpp>
+#endif
+
 #include <iostream>
 #include <map>
 #include <memory>
