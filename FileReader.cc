@@ -14,6 +14,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <sstream> //std::stringstream
 
 #include "./HttpUtils.h"
 #include "./FileReader.h"
@@ -29,9 +31,15 @@ bool FileReader::read_file(string *str) {
   // constructor to std::string (the one that includes a length as a
   // second argument).
 
-  // TODO: implement
+  std::ifstream ifs(fname_.c_str());
+  if (!ifs.is_open()) {
+    return false;
+  }
+  std::stringstream buffer;
+  buffer << ifs.rdbuf();
+  *str = buffer.str();
 
-  return false;
+  return true;
 }
 
 }  // namespace searchserver

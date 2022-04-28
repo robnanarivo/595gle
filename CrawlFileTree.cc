@@ -166,17 +166,31 @@ static void handle_dir(const string& dir_path, DIR *d, WordIndex *index) {
   }
 }
 
+bool isnotalpha(char c) {
+  return !isalpha(c);
+}
+
 static void handle_file(const string& fpath, WordIndex *index) {
-  // TODO: implement
 
   // Read the contents of the specified file into a string
+  string contents;
+  FileReader reader(fpath);
+  if (!reader.read_file(&contents)) {
+    return;
+  }
 
   // Search the string for all tokens, where anything that is
   // not an alphabetic character is considered a delimiter
   // A delimiter marks the end of a token and is not considered a valid part of the token
-  
-  // Record each non empty token as a word into the Wordindex specified by *index
+  vector<string> tokens;
+  boost::split(tokens, contents, isnotalpha);
 
+  // Record each non empty token as a word into the Wordindex specified by *index
+  for (const string& token : tokens) {
+    if (!token.empty()) {
+      index->record(boost::to_lower_copy(token), fpath);
+    }
+  }
   // Your implementation should also be case in-sensitive and record every word in all lower-case
 
 }

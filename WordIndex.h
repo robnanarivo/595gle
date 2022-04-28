@@ -66,7 +66,7 @@ class WordIndex {
   WordIndex& operator=(const WordIndex& other) = delete;
 
  private:
-  // TODO: add
+  std::unordered_map<std::string, std::unordered_map<std::string, int>> word_to_doc_;
 };
 
 }
