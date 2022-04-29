@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include <iostream>
+
 #include "./HttpRequest.h"
 #include "./HttpUtils.h"
 #include "./HttpConnection.h"
@@ -43,17 +45,33 @@ bool HttpConnection::next_request(HttpRequest *request) {
   // after the "\r\n\r\n" in buffer_ for the next time the
   // caller invokes next_request()!
 
-  // TODO: implement
+  size_t next;
+  while (true) {
+    next = buffer_.find(kHeaderEnd, 0, kHeaderEndLen);
+    if (next != string::npos) {
+      break;
+    }
+    wrapped_read(fd_, &buffer_);
+  }
 
-  return false;
+  // set request and new buffer_
+  string request_str = buffer_.substr(0, next + kHeaderEndLen);
+  buffer_ = buffer_.substr(next + kHeaderEndLen, string::npos);
+
+  // parse the request
+  return parse_request(request_str, request);
 }
 
 bool HttpConnection::write_response(const HttpResponse &response) {
   // Implement so that the response is converted to a string
   // and written out to the socket for this connection
 
-  // TODO: implement
-  return false;
+  const string response_str = response.GenerateResponseString();
+  int res = wrapped_write(fd_, response_str);
+  if (res < 0) {
+    return false;
+  }
+  return true;
 }
 
 bool HttpConnection::parse_request(const string &request, HttpRequest* out) {
@@ -74,9 +92,41 @@ bool HttpConnection::parse_request(const string &request, HttpRequest* out) {
   // If a request is malfrormed, return false, otherwise true and 
   // the parsed request is retrned via *out
   
-  // TODO: implement
+  vector<string> lines;
+  boost::split(lines, request, boost::is_any_of("\r\n"));
+  if (lines.size() < 1) {
+    return false;
+  }
 
-  return false;
+  // uri
+  vector<string> uri_split;
+  boost::split(uri_split, lines[0], boost::is_any_of(" "));
+  if (uri_split.size() < 3) {
+    return false;
+  }
+  req.set_uri(uri_split[1]);;  
+
+  // headers
+  for (size_t i = 1; i < lines.size(); i++) {
+    if (lines[i].empty()) {
+      continue;
+    }
+    vector<string> header_split;
+    boost::split(header_split, lines[i], boost::is_any_of(":"));
+    if (header_split.size() < 2) {
+      return false;
+    }
+    string header_name = header_split[0];
+    string header_value = header_split[1];
+    boost::trim(header_name);
+    boost::trim(header_value);
+    boost::to_lower(header_name);
+    boost::to_lower(header_value);
+    req.AddHeader(header_name, header_value);
+  }
+
+  *out = req;
+  return true;
 }
 
 }  // namespace searchserver

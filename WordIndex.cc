@@ -3,7 +3,6 @@
 namespace searchserver {
 
 WordIndex::WordIndex() {
-  // TODO: implement
 }
 
 size_t WordIndex::num_words() {
