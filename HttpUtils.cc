@@ -52,9 +52,29 @@ bool is_path_safe(const string &root_dir, const string &test_file) {
   // You may want to research and see if there is a C function that gets
   // the absolute path of a file.
 
-  // TODO: implment
+  // get absolute path
+  char testpath[PATH_MAX + 1];
+  char rootpath[PATH_MAX + 1];
+  char *ptr;
+  ptr = realpath(test_file.c_str(), testpath);
+  if (ptr == nullptr) {
+    return false;
+  }
+  ptr = realpath(root_dir.c_str(), rootpath);
+  if (ptr == nullptr) {
+    return false;
+  }
+  string test(testpath);
+  string root(rootpath);
 
-  return false;
+  // append "/" to the end of path
+  test += "/";
+  root += "/";
+
+  if (test.compare(0, root.length(), root) != 0) {
+    return false;
+  }
+  return true;
 }
 
 string escape_html(const string &from) {
@@ -67,7 +87,11 @@ string escape_html(const string &from) {
   // the rest of the characters that need to be replaced can be
   // looked up online.
 
-  // TODO: implment
+  replace_all(ret, "&", "&amp;");
+  replace_all(ret, "<", "&lt;");
+  replace_all(ret, ">", "&gt;");
+  replace_all(ret, "\"", "&quot;");
+  replace_all(ret, "'", "&apos;");
 
   return ret;
 }

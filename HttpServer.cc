@@ -139,10 +139,23 @@ static void HttpServer_ThrFn(ThreadPool::Task *t) {
   // so we should keep the connection open between requests rather than
   // creating/destroying the same connection repeatedly.
 
-  // TODO: Implement
   bool done = false;
+  HttpConnection conn(hst->client_fd);
   while (!done) {
-    
+    HttpRequest req;
+    if (!conn.next_request(&req)) {
+      // cannot parse request, closing connection
+      done = true;
+    } else {
+      if (req.GetHeaderValue("connection") == "close") {
+        // client wants to close connection
+        done = true;
+        continue;
+      } else {
+        HttpResponse resp = ProcessRequest(req, hst->base_dir, hst->index);
+        conn.write_response(resp);
+      }
+    }
   }
 }
 
@@ -187,15 +200,48 @@ static HttpResponse ProcessFileRequest(const string &uri,
   // in the HttpResponse as well.
   string file_name = "";
 
-  // TODO: Implement
-
-  // If you couldn't find the file, return an HTTP 404 error.
-  ret.set_protocol("HTTP/1.1");
-  ret.set_response_code(404);
-  ret.set_message("Not Found");
-  ret.AppendToBody("<html><body>Couldn't find file \""
-                   + escape_html(file_name)
-                   + "\"</body></html>\n");
+  URLParser parser;
+  parser.parse(uri);
+  file_name = parser.path().substr(8);
+  FileReader reader(file_name);
+  string file_content;
+  if (!is_path_safe(base_dir, file_name) || !reader.read_file(&file_content)) {
+    // If you couldn't find the file, return an HTTP 404 error.
+    ret.set_protocol("HTTP/1.1");
+    ret.set_response_code(404);
+    ret.set_message("Not Found");
+    ret.AppendToBody("<html><body>Couldn't find file \""
+                    + escape_html(file_name)
+                    + "\"</body></html>\n");
+  } else {
+    // If you found the file, return an HTTP 200 OK response.
+    vector<string> file_name_parts;
+    boost::split(file_name_parts, file_name, boost::is_any_of("."));
+    string file_type = file_name_parts[file_name_parts.size() - 1];
+    if (file_type == "html" || file_type == "htm") {
+      ret.set_content_type("text/html");
+    } else if (file_type == "jpeg" || file_type == "jpg") {
+      ret.set_content_type("image/jpeg");
+    } else if (file_type == "png") {
+      ret.set_content_type("image/png");
+    } else if (file_type == "txt") {
+      ret.set_content_type("text/plain");
+    } else if (file_type == "js") {
+      ret.set_content_type("text/javascript");
+    } else if (file_type == "css") {
+      ret.set_content_type("text/css");
+    } else if (file_type == "xml") {
+      ret.set_content_type("text/xml");
+    } else if (file_type == "gif") {
+      ret.set_content_type("image/gif");
+    } else {
+      ret.set_content_type("text/plain");
+    }
+    ret.set_protocol("HTTP/1.1");
+    ret.set_response_code(200);
+    ret.set_message("OK");
+    ret.AppendToBody(file_content);
+  }
   return ret;
 }
 
@@ -220,8 +266,40 @@ static HttpResponse ProcessQueryRequest(const string &uri,
   //
   //  - Use the specified index to generate the query results
 
-  // TODO: implement
+  ret.set_protocol("HTTP/1.1");
+  ret.set_response_code(200);
+  ret.set_message("OK");
+  string summary = kFivegleStr;
+  
+  URLParser parser;
+  parser.parse(uri);
+  std::map<string, string> args = parser.args();
 
+  // first entry
+  if (args.find("terms") == args.end()) {
+    summary += "</body>\n</html>\n";
+    ret.AppendToBody(summary);
+    return ret;
+  }
+  
+  // query
+  string terms = args["terms"];
+  vector<string> search_terms;
+  boost::split(search_terms, terms, boost::is_any_of(" "));
+  string keywords = boost::join(search_terms, " ");
+  list<Result> results = index->lookup_query(search_terms);
+
+  if (results.size() == 0) {
+    summary += "<p><br>\nNo results found for <b>" + keywords + "</b>\n<p>\n\n</body>\n</html>\n";
+  } else {
+    summary += "<p><br>\n";
+    summary += std::to_string(results.size()) + " results found for <b>" + escape_html(keywords) + "</b>\n</p>\n\n<ul>\n";
+    for (Result res : results) {
+      summary += " <li> <a href=\"/static/" + res.doc_name + "\">" + res.doc_name + "</a> [" + std::to_string(res.rank) + "]<br>\n";
+    }
+    summary += "</ul>\n</body>\n</html>\n";
+  }
+  ret.AppendToBody(summary);
   return ret;
 }
 
